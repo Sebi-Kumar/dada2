@@ -164,12 +164,8 @@ double compute_lambda_ts(Raw *raw, Sub *sub, unsigned int ncol, double *err_mat,
     } else {
       Rcpp::stop("Non-ACGT sequences in compute_lambda.");
     }
-    if(use_quals) {
-      // Turn quality into the index in the array
-      qind[pos1] = raw->qual[pos1]; // qind = unsigned int
-    } else {
-      qind[pos1] = 0;
-    }
+    // Change use_quals to mean whether we average quality scores or not
+    qind[pos1] = raw->qual[pos1];
     
     if( qind[pos1] > (ncol-1) ) {
       Rcpp::stop("Rounded quality exceeded range of err lookup table.");

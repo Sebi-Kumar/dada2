@@ -169,6 +169,19 @@ Rcpp::List dada_uniques(std::vector< std::string > seqs, std::vector<int> abunda
                    max_clust, min_fold, min_hamming, min_abund, use_quals, final_consensus, 
                    vectorized_alignment, multithread, verbose, SSE, gapless, greedy);
 
+  /********** PRINT CENTER QUALITIES *********/
+  double avg_qual = 0;
+  unsigned long total_length = 0;
+  for(unsigned int i = 0; i < bb->nclust; i++) {
+    Raw *center = bb->bi[i]->center;
+    for(unsigned int j = 0; j < center->length; j++) {
+      avg_qual += center->qual[j];
+    }
+    total_length += center->length;
+  }
+  avg_qual /= total_length;
+  Rcpp::Rcout << "Average quality score: " << avg_qual << std::endl;
+
   /********** MAKE OUTPUT *********/
   // Create subs for all the relevant alignments
   Sub **subs = (Sub **) malloc(bb->nraw * sizeof(Sub *)); //E

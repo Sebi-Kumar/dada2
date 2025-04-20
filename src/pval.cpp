@@ -90,9 +90,6 @@ double get_pA(Raw *raw, Bi *bi, bool detect_singletons) {
 
 // This calculates lambda from a lookup table index by transition (row) and rounded quality (col)
 double compute_lambda(Raw *raw, Sub *sub, Rcpp::NumericMatrix errMat, bool use_quals, unsigned int ncol) {
-  // Testing suggests that compute_lambda_ts is used instead of compute_lambda
-  // We keep this print message to know if/when this hypothesis is violated
-  Rcpp::Rcout << "Hello from compute_lambda!" << std::endl;
   int s, pos0, pos1, nti0, nti1, len1;
   double lambda;
   int tvec[SEQLEN];
@@ -112,12 +109,7 @@ double compute_lambda(Raw *raw, Sub *sub, Rcpp::NumericMatrix errMat, bool use_q
     } else {
       Rcpp::stop("Non-ACGT sequences in compute_lambda.");
     }
-    if(use_quals) {
-      // Turn quality into the index in the array
-      qind[pos1] = raw->qual[pos1]; // unsigned int
-    } else {
-      qind[pos1] = 0; // unsigned int
-    }
+    qind[pos1] = raw->qual[pos1];
   }
   
   // Now fix the ones where subs occurred
@@ -130,6 +122,11 @@ double compute_lambda(Raw *raw, Sub *sub, Rcpp::NumericMatrix errMat, bool use_q
     nti0 = ((int) sub->nt0[s]) - 1;
     nti1 = ((int) sub->nt1[s]) - 1;
     tvec[pos1] = nti0*4 + nti1;
+
+    if(use_quals) {
+      // NEW: Average quality scores between center and sequence at substituted positions (avoiding overflow)
+      qind[pos1] = ((unsigned int)sub->q0[s] + (unsigned int)sub->q1[s])/2;
+    }
   }
   
   // And calculate lambda
